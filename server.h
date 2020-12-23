@@ -32,6 +32,7 @@ private:
     QLabel *statusLabel;
     QLocalServer *server;
     int number;
+    void fillStruct(int i);
 };
 
 #endif

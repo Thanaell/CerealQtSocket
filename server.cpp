@@ -40,9 +40,22 @@ Server::Server(QWidget *parent)
     setWindowTitle(QGuiApplication::applicationDisplayName());
 
     for (int i=0; i<maxClients; i++){
+        fillStruct(i+1);
         createClient();
     }
 
+}
+void Server::fillStruct(int i){
+    clientStructs[i].mat=cv::Mat::ones(2,5,CV_8UC1);
+    clientStructs[i].vec.push_back(std::pair<int,std::optional<float>>{1,2.3});
+    clientStructs[i].vec.push_back(std::pair<int,std::optional<float>>{42,55.5});
+    clientStructs[i].name="hello2";
+    clientStructs[i].qName="qHello";
+    clientStructs[i].intMap[1]="helloQ";
+    clientStructs[i].intValue=i;
+    clientStructs[i].myBasicStruct.myInt=5;
+    clientStructs[i].myBasicStruct.myMap["hello"]=42;
+    clientStructs[i].myBasicStruct.myMap["world"]=12;
 }
 
 void Server::createClient(){
@@ -82,7 +95,7 @@ void Server::readMessage(){
     ComplexStruct myStruct2;
     iarchive(myStruct2.qName,myStruct2.mat,myStruct2.vec,myStruct2.name,myStruct2.intMap,myStruct2.intValue,myStruct2.myBasicStruct); // Read the data from the archivetom struct
     std::ostringstream oss;
-    statusLabel->setText(statusLabel->text()+"\n"+"read message from client "+ QString::number(i)+" "+ QString::number(myStruct2.intValue));
+    statusLabel->setText(statusLabel->text()+"\n"+"Answer from client "+ QString::number(i)+" "+ QString::number(myStruct2.intValue));
     static_cast<QLocalSocket*>(sender())->disconnectFromServer(); //disconnects client after it answered
 }
 
@@ -92,17 +105,7 @@ void Server::sendMessage(int numClient)
     std::stringstream ss;
     std::string binary;
     cereal::BinaryOutputArchive oarchive(ss); // Create an output archive
-    ComplexStruct myStruct;
-    myStruct.mat=cv::Mat::ones(2,5,CV_8UC1);
-    myStruct.vec.push_back(std::pair<int,std::optional<float>>{1,2.3});
-    myStruct.vec.push_back(std::pair<int,std::optional<float>>{42,55.5});
-    myStruct.name="hello2";
-    myStruct.qName="qHello";
-    myStruct.intMap[1]="helloQ";
-    myStruct.intValue=2;
-    myStruct.myBasicStruct.myInt=5;
-    myStruct.myBasicStruct.myMap["hello"]=42;
-    myStruct.myBasicStruct.myMap["world"]=12;
+    ComplexStruct myStruct=clientStructs[numClient];
     oarchive(myStruct.qName,myStruct.mat,myStruct.vec,myStruct.name,myStruct.intMap,myStruct.intValue,myStruct.myBasicStruct);// Write the data to the archive
     ss >> binary;
     ss.clear();
