@@ -19,7 +19,7 @@ find_package(Qt5Network)
 
 include_directories(${cereal_DIR}/include)
 
-add_executable(testClientServer main.cpp server.cpp server.h dataStructs.cpp dataStructs.h)
-add_executable(client mainClient.cpp client.cpp client.h dataStructs.cpp dataStructs.h)
-target_link_libraries(testClientServer ${OpenCV_LIBS} Qt5::Core Qt5::Network Qt5::Widgets Qt5::Gui)
-target_link_libraries(client ${OpenCV_LIBS} Qt5::Core Qt5::Network Qt5::Widgets Qt5::Gui)
+add_executable(ProtoCereal main.cpp server.cpp server.h dataStructs.h)
+add_executable(Client mainClient.cpp client.cpp client.h dataStructs.h)
+target_link_libraries(ProtoCereal ${OpenCV_LIBS} Qt5::Core Qt5::Network Qt5::Widgets Qt5::Gui)
+target_link_libraries(Client ${OpenCV_LIBS} Qt5::Core Qt5::Network Qt5::Widgets Qt5::Gui)

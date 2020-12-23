@@ -18,21 +18,21 @@ class Server : public QDialog
 
 public:
     explicit Server(QWidget *parent = nullptr);
-    void createClient();
+
 private slots:
     void sendMessage(int numClient);
     void readMessage();
     void initClientSocket(int numClient);
 private:
-    const int maxClients=3;
-    int nbClients;
-    std::map<int, QProcess*> clientProcesses;
-    std::map<int, QLocalSocket*> clientSockets;
-    std::map<int, ComplexStruct> clientStructs;
-    QLabel *statusLabel;
-    QLocalServer *server;
-    int number;
-    void fillStruct(int i);
+    const int m_maxClients=3;
+    int m_nbClients;
+    std::map<int, QProcess*> m_clientProcesses;
+    std::map<int, QLocalSocket*> m_clientSockets;
+    std::map<int, ComplexStruct> m_clientStructs;
+    QLabel *m_statusLabel;
+    QLocalServer *m_server;
+    void mFillStruct(int i);
+    bool mCreateClient();
 };
 
 #endif

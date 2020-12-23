@@ -1,8 +1,6 @@
-#include <QDataStream>
 #include <opencv2/core.hpp>
-#include <QDebug>
 #include <map>
-#include <QMap>
+#include <QString>
 #include <optional>
 #include "cereal/cereal.hpp"
 #include <cereal/archives/binary.hpp>
@@ -12,16 +10,11 @@
 #include <cereal/types/optional.hpp>
 #include <cereal/types/utility.hpp>
 
+
+//Serialization and deserialization for custom structs, cv::Mat and QString using cereal
 namespace cv {
 
-/**
- * Serialise a cv::Mat using cereal.
- *
- * Supports all types of matrices as well as non-contiguous ones.
- *
- * @param[in] ar The archive to serialise to.
- * @param[in] mat The matrix to serialise.
- */
+//------------------------------------------------------
 template<class Archive>
 void save(Archive& ar, const cv::Mat& mat)
 {
@@ -49,14 +42,7 @@ void save(Archive& ar, const cv::Mat& mat)
     }
 };
 
-/**
- * De-serialise a cv::Mat using cereal.
- *
- * Supports all types of matrices as well as non-contiguous ones.
- *
- * @param[in] ar The archive to deserialise from.
- * @param[in] mat The matrix to deserialise into.
- */
+//------------------------------------------------------
 template<class Archive>
 void load(Archive& ar, cv::Mat& mat)
 {
@@ -83,11 +69,13 @@ void load(Archive& ar, cv::Mat& mat)
 
 }
 
+//------------------------------------------------------
 template<class Archive>
 void save(Archive& ar, const QString &str){
     ar(str.toStdString());
 }
 
+//------------------------------------------------------
 template<class Archive>
 void load(Archive& ar, QString &str){
     std::string temp;
@@ -95,17 +83,7 @@ void load(Archive& ar, QString &str){
     str=QString::fromStdString(temp);
 }
 
-struct Test3
-{
-  int a;
-};
-
-template<class Archive>
-void serialize(Archive & ar, Test3 & t)
-{
-  ar(t.a);
-}
-
+//------------------------------------------------------
 struct BasicStruct{
     int myInt;
     std::map<QString, float> myMap;
@@ -113,6 +91,7 @@ struct BasicStruct{
       void serialize(Archive & archive);
 };
 
+//------------------------------------------------------
 struct ComplexStruct{
     std::string name;
     QString qName;
@@ -125,21 +104,15 @@ struct ComplexStruct{
       void serialize(Archive & archive);
 };
 
+//------------------------------------------------------
 template<class Archive>
 void ComplexStruct::serialize(Archive & archive){
     archive(name,qName,intValue,vec,intMap,mat,myBasicStruct);
 }
 
+//------------------------------------------------------
 template<class Archive>
 void BasicStruct::serialize(Archive & archive){
     archive(myInt,myMap);
 
 }
-
-
-
-void writeMatToStream(cv::Mat *mImage, QDataStream *stream);
-cv::Mat readMatFromStream(QDataStream *stream);
-
-QDataStream &operator <<(QDataStream &out, const ComplexStruct &dataStruct);
-QDataStream &operator >>(QDataStream &in, ComplexStruct &dataStruct);

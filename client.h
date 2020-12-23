@@ -52,13 +52,12 @@
 #define CLIENT_H
 
 #include <QDialog>
-#include <QDataStream>
 #include <QLocalSocket>
-#include <dataStructs.h>
+#include <QDataStream>
+#include "dataStructs.h"
 
 QT_BEGIN_NAMESPACE
 class QLabel;
-class QLineEdit;
 class QPushButton;
 QT_END_NAMESPACE
 
@@ -68,23 +67,20 @@ class Client : public QDialog
 
 public:
     explicit Client(QWidget *parent = nullptr);
-
-private slots:
-
-    void requestNewMessage();
-    void readMessage();
-    void handleReceivedStruct();
-    void displayError(QLocalSocket::LocalSocketError socketError);
-signals:
-    void structRead();
+private
+    slots:
+    void mRequestNewMessage();
+    void mReadMessage();
+    void mHandleReceivedStruct();
+    void mDisplayError(QLocalSocket::LocalSocketError socketError);
+    signals:
+    void mStructRead();
 private:
-    int nbMessage;
-    void sendMessage();
-    ComplexStruct myStruct;
-    QLabel *statusLabel;
-    QLocalSocket *socket;
-    quint32 blockSize;
-    void operateOnStruct();
+    void mSendMessage();
+    ComplexStruct m_struct;
+    QLabel *m_statusLabel;
+    QLocalSocket *m_socket;
+    void mOperateOnStruct();
 };
 
 #endif
