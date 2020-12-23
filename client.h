@@ -70,15 +70,21 @@ public:
     explicit Client(QWidget *parent = nullptr);
 
 private slots:
+
     void requestNewMessage();
     void readMessage();
+    void handleReceivedStruct();
     void displayError(QLocalSocket::LocalSocketError socketError);
-
+signals:
+    void structRead();
 private:
-    QPushButton *getMessageButton;
+    int nbMessage;
+    void sendMessage();
+    ComplexStruct myStruct;
     QLabel *statusLabel;
     QLocalSocket *socket;
     quint32 blockSize;
+    void operateOnStruct();
 };
 
 #endif

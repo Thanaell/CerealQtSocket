@@ -3,6 +3,8 @@
 
 #include <QDialog>
 #include "dataStructs.h"
+#include <QProcess>
+#include <QLocalSocket>
 
 QT_BEGIN_NAMESPACE
 class QLabel;
@@ -19,7 +21,12 @@ public:
     void createClient();
 private slots:
     void sendMessage();
+    void readMessage();
+    void initClientSocket();
 private:
+    QProcess *clientProcess;
+    QLabel *statusLabel;
+    QLocalSocket *clientSocket;
     QLocalServer *server;
     int number;
 };
