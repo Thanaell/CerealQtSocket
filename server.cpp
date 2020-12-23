@@ -6,7 +6,7 @@
 
 
 Server::Server(QWidget *parent)
-    : QDialog(parent)
+    : QDialog(parent), nbClients(0)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
@@ -22,7 +22,7 @@ Server::Server(QWidget *parent)
     statusLabel = new QLabel;
     statusLabel->setWordWrap(true);
     statusLabel->setText(tr("The server is running.\n"
-                            "Run the Local Fortune Client example now."));
+                            "Run the Local Client example now."));
 
     QPushButton *quitButton = new QPushButton(tr("Quit"));
     quitButton->setAutoDefault(false);
@@ -39,30 +39,42 @@ Server::Server(QWidget *parent)
 
     setWindowTitle(QGuiApplication::applicationDisplayName());
 
-    createClient();
+    for (int i=0; i<maxClients; i++){
+        createClient();
+    }
 
 }
 
 void Server::createClient(){
-    QProcess *myClientProcess = new QProcess();
-    myClientProcess->start("client.exe",QStringList());
-    myClientProcess->waitForStarted(-1);
-    qDebug()<<"Started client"<<myClientProcess->processId();
-    QObject::connect(server, &QLocalServer::newConnection,this, &Server::initClientSocket);
+    nbClients++;
+    clientProcesses[nbClients]=new QProcess();
+    clientProcesses[nbClients]->start("client.exe",QStringList());
+    clientProcesses[nbClients]->waitForStarted(-1);
+    qDebug()<<"Started client"<<nbClients;
+    //QObject::connect(server, &QLocalServer::newConnection,this, &Server::initClientSocket); //non blocking but loses info of which process has which socket
+    server->waitForNewConnection(-1);
+    initClientSocket(nbClients);
 
 }
 
-void Server::initClientSocket(){
-    clientSocket = server->nextPendingConnection();
-    connect(clientSocket, &QLocalSocket::disconnected,
-            clientSocket, &QLocalSocket::deleteLater);
-    sendMessage();
-    QObject::connect(clientSocket, &QLocalSocket::readyRead, this, &Server::readMessage);
+void Server::initClientSocket(int numClient){
+    clientSockets[numClient] = server->nextPendingConnection();
+    connect( clientSockets[numClient], &QLocalSocket::disconnected,
+             clientSockets[numClient], &QLocalSocket::deleteLater);
+    sendMessage(numClient);
+    QObject::connect( clientSockets[numClient], &QLocalSocket::readyRead, this, &Server::readMessage);
 }
 
 void Server::readMessage(){
+    int i;
+    for (auto elem: clientSockets){
+        if (elem.second==sender()){
+            i=elem.first;
+            break;
+        }
+    }
     std::stringstream ss2;
-    QByteArray inBytes = clientSocket->readAll();
+    QByteArray inBytes = static_cast<QLocalSocket*>(sender())->readAll();
     std::string outBinaryString;
     outBinaryString=std::string(inBytes.constData(), inBytes.length());
     ss2 << outBinaryString;
@@ -70,11 +82,11 @@ void Server::readMessage(){
     ComplexStruct myStruct2;
     iarchive(myStruct2.qName,myStruct2.mat,myStruct2.vec,myStruct2.name,myStruct2.intMap,myStruct2.intValue,myStruct2.myBasicStruct); // Read the data from the archivetom struct
     std::ostringstream oss;
-    statusLabel->setText("read message from client "+ QString::number(myStruct2.intValue));
-    clientSocket->disconnectFromServer(); //disconnects client after it answered
+    statusLabel->setText(statusLabel->text()+"\n"+"read message from client "+ QString::number(i)+" "+ QString::number(myStruct2.intValue));
+    static_cast<QLocalSocket*>(sender())->disconnectFromServer(); //disconnects client after it answered
 }
 
-void Server::sendMessage()
+void Server::sendMessage(int numClient)
 {
     QByteArray block;
     std::stringstream ss;
@@ -96,7 +108,7 @@ void Server::sendMessage()
     ss.clear();
     block=QByteArray(binary.c_str(), binary.length());
 
-    clientSocket->write(block);
-    clientSocket->flush();
+    clientSockets[numClient]->write(block);
+    clientSockets[numClient]->flush();
 
 }

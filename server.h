@@ -20,13 +20,16 @@ public:
     explicit Server(QWidget *parent = nullptr);
     void createClient();
 private slots:
-    void sendMessage();
+    void sendMessage(int numClient);
     void readMessage();
-    void initClientSocket();
+    void initClientSocket(int numClient);
 private:
-    QProcess *clientProcess;
+    const int maxClients=3;
+    int nbClients;
+    std::map<int, QProcess*> clientProcesses;
+    std::map<int, QLocalSocket*> clientSockets;
+    std::map<int, ComplexStruct> clientStructs;
     QLabel *statusLabel;
-    QLocalSocket *clientSocket;
     QLocalServer *server;
     int number;
 };
